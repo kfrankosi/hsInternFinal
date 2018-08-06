@@ -1,0 +1,93 @@
+#import serial
+import datetime  
+import time  
+import sys  
+#import urllib
+#from urllib2 import Request, urlopen, URLError, HTTPError
+import urllib.request
+import json
+
+
+def getVal(url):
+  
+        baudrate = 9600  
+        portaddr = "/dev/ttyACM0"  
+          
+        #Headers  
+        req_headers = {'Content-Type': 'application/json'}  
+          
+          
+        # test Web API connection using simple GET  
+        #url = 'https://cb-oakpi4-vis.dev.osisoft.int/piwebapi/'
+        #url = 'https://pikfrank.osisoft.int/piwebapi/'
+        request = urllib.request.Request(url, headers=req_headers)  
+        password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+        #password_manager = urllib.request.HTTPBasicAuthHandler()  
+        password_manager.add_password(None,url,'bbui','Asdfqwerty123')  
+          
+        auth = urllib.request.HTTPBasicAuthHandler(password_manager)  
+        opener = urllib.request.build_opener(auth)  
+        urllib.request.install_opener(opener)  
+          
+        try:  
+                responce=urllib.request.urlopen(request).read()
+                #responce = str(responce)
+                #responce = (responce[2:len(responce)-1])
+                val = responce.decode("utf-8")
+                val = json.loads(val)
+                return val['Value']
+                #print ('Responce: ', responce)  
+        except  HTTPError as e:  
+                print ('Error: ', e.code  )
+        except  URLError as e:  
+                print ('Reason: ', e.reason  )
+          
+val = (getVal('http://cb-oakpi4-vis.dev.osisoft.int/piwebapi/streams/F1AbEXkS_2HFm7kCzmNswAI5qJQAm3Vup2O6BGRRQAd3LcnsgXIrtHx1BS0m5Elh8VOwyuwQ0ItT0FLUEk0LUFGMVxGQUNJTElUSUVTIC0gMTYwMCBBTFZBUkFET19URVNUXENCLU9BS1BJNC1SRUxBWVxTTFRDXFdFQVRIRVJcQ0FMQ1VMQVRJT05TfE9VVFNJREUgQUlSIFRFTVBFUkFUVVJF/value'))
+print(val)
+
+
+'''
+#URL for POST command to write a value to an AF Attribute with PI point reference  
+url = 'https://<server_name>/piwebapi/streams/<WebId>/value'  
+request = urllib2.Request(url, headers=req_headers)  
+  
+# define serial port and read temperature value.  
+ser = serial.Serial(portaddr,baudrate)  
+# read and skip first line of data which is usually not complete  
+tempValue=ser.readline()   
+  
+  
+while 1:  
+        ts = time.time()  
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')  
+        tempValue=ser.readline()  
+        print(st + "," + tempValue)  
+        #This data string works as well and PI will provide the timestamp  
+        #req_data = str({"Value": x})  
+          
+        # use the generated timestamp from the raspPI  
+        # package the request  
+        req_data = str({"Timestamp": st, "Value":tempValue})  
+        request = urllib2.Request(url, headers=req_headers)  
+        request.add_data(req_data)  
+  
+        # Use try/catch to get telemetry on errors  
+        try:  
+                responce=urllib2.urlopen(request).read()  
+        except  HTTPError as e:  
+                print 'Error: ', e.code  
+        except  URLError as e:  
+                print 'Reason: ', e.reason  
+  
+  
+        #Arduino sends data approx every 3 seconds.  
+        time.sleep(3)  
+          
+        # flush serial cache or data will lag the timestamp.  
+        ser.flush()  
+        ser.flushInput()  
+        ser.flushOutput()  
+  
+ser.close
+'''
+
